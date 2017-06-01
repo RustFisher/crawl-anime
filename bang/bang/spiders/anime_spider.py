@@ -1,17 +1,25 @@
-import scrapy
+import os
 
-''' 获取动画的信息 '''
+import scrapy
+import json
+
+'''
+获取动画的信息  存储成json文件
+'''
 
 
 class AnimeSpider(scrapy.Spider):
     name = "bang"
-
+    bang_url_prefix = 'http://bangumi.tv/subject/'
+    anime_id_list = ['118335', '207573', '202419', '172498', '185943']
     start_urls = [
-        'file:///home/rust/ws/crawl-anime/web_source/a118335.html',
-        'file:///home/rust/ws/crawl-anime/web_source/a210811.html',
-        'file:///home/rust/ws/crawl-anime/web_source/a146732.html',
+        # 'file:///home/rust/ws/crawl-anime/web_source/a118335.html',
+        # 'file:///home/rust/ws/crawl-anime/web_source/a210811.html',
+        # 'file:///home/rust/ws/crawl-anime/web_source/a146732.html',
         # 'file://H/fisher_p/crawl-anime/web_source/a118335.html',
     ]
+    for a_id in anime_id_list:
+        start_urls.append(bang_url_prefix + a_id)
 
     def parse(self, response):
         res = response
@@ -23,17 +31,14 @@ class AnimeSpider(scrapy.Spider):
         anime_bang_id = str(a_link).split('/')[-1]
         name_zh = title.css('a::attr(title)').extract_first()
         sub_title = title.css('small::text').extract_first()
-        print(name_jp + " , " + name_zh + " , " + anime_bang_id + " , " + sub_title)
+        # print(name_jp + " , " + name_zh + " , " + anime_bang_id + " , " + sub_title)
 
         summary = ""  # 获取简介
         for s in res.css('div.subject_summary::text').extract():
             summary += s
-        print(summary)
 
         info = res.css('div.infobox')  # 获取左侧信息表
-
         pic_link = info.css('a::attr(href)').extract_first()  # 获取封面图片地址
-        print("pic link: " + pic_link)
 
         info_list = []  # 存储左侧信息
         for li in info.css('li'):
@@ -54,18 +59,32 @@ class AnimeSpider(scrapy.Spider):
             list_entity.append(staff_list)
             info_list.append(list_entity)
 
-        for le in info_list:
-            print(le)
-
         chars = res.css('div.userContainer')  # get characters and CV
-        char_list = []
+        character_pair_list = []
         for char in chars:
             character_bang_id = char.css('a::attr(href)').extract_first().split("/")[-1]
             character_name = char.css('a::attr(title)').extract_first()
             cv_bang_id = char.css('a::attr(href)')[-1].extract().split("/")[-1]
             cv_name = char.css('a::text')[-1].extract()
-            char_list.append(character_name + "%%" + character_bang_id + "%&" + cv_name + "%%" + cv_bang_id)
+            character_pair_list.append(character_name + "%%" + character_bang_id + "%&" + cv_name + "%%" + cv_bang_id)
 
-        print(char_list)
+        print("crawl data finish, now save to json " + anime_bang_id)
+        anime_dict = dict()  # animation json dictionary
+        anime_dict['anime_bang_id'] = anime_bang_id
+        anime_dict['sub_title'] = sub_title
+        anime_dict['name_jp'] = name_jp
+        anime_dict['name_zh'] = name_zh
+        anime_dict['pic_link'] = pic_link
+        anime_dict['summary'] = summary
+        anime_dict['info_list'] = info_list
+        anime_dict['character_pair_list'] = character_pair_list
 
-        print("Finish\n")
+        json_dir = "../anime_json/2017-04/"
+        if not os.path.exists(json_dir):
+            print("json dir not found")
+            os.makedirs(json_dir)
+            print("Create dir  " + json_dir)
+
+        json_file = open(json_dir + anime_bang_id + '.json', 'w', encoding='utf8')
+        json_file.write(json.dumps(anime_dict, ensure_ascii=False))
+        json_file.close()
