@@ -12,14 +12,18 @@ class PeopleSpider(scrapy.Spider):
     name = "bp"
     bang_url_prefix = 'http://bangumi.tv/people/'
     start_urls = [
-        # 'file:///home/rust/ws/crawl-anime/web_source/p2822.html',
+        'file:///home/rust/ws/crawl-anime/web_source/p561.html',
+        'file:///home/rust/ws/crawl-anime/web_source/p5764.html',
+        'file:///home/rust/ws/crawl-anime/web_source/p7734.html',
+        'file:///home/rust/ws/crawl-anime/web_source/p10757.html',
+        'file:///home/rust/ws/crawl-anime/web_source/p17981.html',
 
         
-        'file://H/fisher_p/crawl-anime/web_source/p1656.html',
-        'file://H/fisher_p/crawl-anime/web_source/p2822.html',
-        'file://H/fisher_p/crawl-anime/web_source/p7360.html',
-        'file://H/fisher_p/crawl-anime/web_source/p9096.html',
-        'file://H/fisher_p/crawl-anime/web_source/p13233.html',
+        # 'file://H/fisher_p/crawl-anime/web_source/p1656.html',
+        # 'file://H/fisher_p/crawl-anime/web_source/p2822.html',
+        # 'file://H/fisher_p/crawl-anime/web_source/p7360.html',
+        # 'file://H/fisher_p/crawl-anime/web_source/p9096.html',
+        # 'file://H/fisher_p/crawl-anime/web_source/p13233.html',
     ]
     people_id_list = []
 
@@ -48,6 +52,7 @@ class PeopleSpider(scrapy.Spider):
         job = "job"  # 职业
         p_detail = ""  # 简介
         productions = []  # 作品
+        cast_productions = []  # 出演作品
         for cb in res.css('div.column'):
             if cb.css('div::attr(id)').extract_first() == 'columnCrtB':  # 获取中间的 columnCrtB 信息
                 for d in cb.css('div.detail::text').extract():

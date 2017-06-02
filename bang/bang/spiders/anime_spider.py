@@ -10,16 +10,19 @@ import json
 
 class AnimeSpider(scrapy.Spider):
     name = "bang"
-    bang_url_prefix = 'http://bangumi.tv/subject/'
-    anime_id_list = ['118335', '207573', '202419', '172498', '185943']
+
     start_urls = [
         # 'file:///home/rust/ws/crawl-anime/web_source/a118335.html',
         # 'file:///home/rust/ws/crawl-anime/web_source/a210811.html',
         # 'file:///home/rust/ws/crawl-anime/web_source/a146732.html',
         # 'file://H/fisher_p/crawl-anime/web_source/a118335.html',
     ]
-    for a_id in anime_id_list:
-        start_urls.append(bang_url_prefix + a_id)
+
+    #  读取JSON中的bang_id
+    id_jsons = os.listdir('../res_data/anime_bang_id')
+    for json_file in os.listdir('../res_data/anime_bang_id'):
+        for single_id in json.load(open('../res_data/anime_bang_id/' + json_file, 'r')):
+            start_urls.append('http://bangumi.tv/subject/' + single_id)
 
     def parse(self, response):
         res = response
@@ -68,7 +71,7 @@ class AnimeSpider(scrapy.Spider):
             cv_name = char.css('a::text')[-1].extract()
             character_pair_list.append(character_name + "%%" + character_bang_id + "%&" + cv_name + "%%" + cv_bang_id)
 
-        print("crawl data finish, now save to json " + anime_bang_id)
+        print("crawl <<" + name_zh + ">> finish, now save to json " + anime_bang_id)
         anime_dict = dict()  # animation json dictionary
         anime_dict['anime_bang_id'] = anime_bang_id
         anime_dict['sub_title'] = sub_title
@@ -79,7 +82,7 @@ class AnimeSpider(scrapy.Spider):
         anime_dict['info_list'] = info_list
         anime_dict['character_pair_list'] = character_pair_list
 
-        json_dir = "../anime_json/2017-04/"
+        json_dir = "../res_data/anime_json/2017-01/"  # todo 根据实际情况而改变
         if not os.path.exists(json_dir):
             print("json dir not found")
             os.makedirs(json_dir)
