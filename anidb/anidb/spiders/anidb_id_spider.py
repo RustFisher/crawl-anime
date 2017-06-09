@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import os
 import urllib.parse
 import json
 import codecs
 
 import scrapy
+import sys
 
 '''
 获取 Anidb ID
@@ -25,7 +27,14 @@ class AnidbIDSpider(scrapy.Spider):
     start_url_suffix = "&show=search&do.search=search"
     global anidb_bang
     anidb_bang = dict()
-    anidb_bang['進撃の巨人 Season 2 进击的巨人 第二季'] = '118335'
+
+    # 直接从动画JSON库填充数据
+    dir_path = '../res_data/anime_json/'
+    for sd in os.listdir(dir_path):
+        for j_name in os.listdir(dir_path + sd):
+            j_item = json.load(open(dir_path + sd + "/" + j_name, 'r'))
+            anidb_bang[j_item['name_jp']] = j_item['anime_bang_id']
+
     start_urls = []
     for ai in anidb_bang:
         url = str(start_url_prefix + ai.replace(" ", "+") + start_url_suffix)
@@ -34,7 +43,8 @@ class AnidbIDSpider(scrapy.Spider):
     def parse(self, res):
         n_jp = urllib.parse.unquote(
             str(res.url).replace(start_url_prefix, "").replace(start_url_suffix, "").replace("+", " "))
-        anime_anidb_id = (res.css('table.search_results').css('td.relid a::attr(href)').extract_first()).split("=")[-1]
+        anime_anidb_id = \
+            str((res.css('table.search_results').css('td.relid a::attr(href)').extract_first())).split("=")[-1]
         a_map = dict()
         a_map['anime_anidb_id'] = anime_anidb_id
         a_map['name_jp'] = n_jp

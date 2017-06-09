@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import urllib.parse
 import json
 import codecs
@@ -21,7 +22,12 @@ bangID和AnidbID已经建立好了对应关系
 class AnidbScoreSpider(scrapy.Spider):
     name = "anrating"
     start_url_prefix = "http://anidb.net/perl-bin/animedb.pl?show=anime&aid="
+    dir_path = '../res_data/anime_bang_anidb_mapping/'
     anidb_id_list = ['12233', '10750']
+    for a_name in os.listdir(dir_path):
+        json_item = json.load(open(dir_path + a_name, 'r'))
+        if json_item['anime_anidb_id'] is not None:
+            anidb_id_list.append(json_item['anime_anidb_id'])
     start_urls = [
         # 'file://H/fisher_p/crawl-anime/web_source/AniDB10750.html',
         # 'file://H/fisher_p/crawl-anime/web_source/AniDB12233.html',
