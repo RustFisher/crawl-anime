@@ -5,3 +5,5 @@ create_anime_db.py
 save_anime_to_db.py
 
 convert_anime_to_db_format.py
+
+update_db_anidb_info.py
