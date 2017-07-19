@@ -1,9 +1,5 @@
 /output
 
-create_anime_db.py
+/__pycache__
 
-save_anime_to_db.py
-
-convert_anime_to_db_format.py
-
-update_db_anidb_info.py
+db_config.py
