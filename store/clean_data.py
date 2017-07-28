@@ -90,6 +90,8 @@ def _convert_anime_to_db_format():
     dir_path = '../res_data/anime_json/'
     count = 0
     for sd in os.listdir(dir_path):
+        if '2017-07' not in sd:  # 只针对某个季度
+            continue
         for j_name in os.listdir(dir_path + sd):
             j_item = json.load(open(dir_path + sd + "/" + j_name, 'r'))  # 读取原始数据
             item = dict()  # 整理后的目标数据
@@ -126,7 +128,7 @@ def _convert_anime_to_db_format():
     conn.close()
 
 
-def _save_anime_to_db():
+def _save_anime_to_db(target_season='2017-07'):
     """ 将json数据存入数据库
         前提条件 - json文件已经是符合数据库的格式
     """
@@ -155,6 +157,9 @@ def _save_anime_to_db():
     dir_path = 'output/db_anime_json/'
     count = 0
     for sd in os.listdir(dir_path):
+        if target_season not in sd:
+            print("skip season: " + sd)
+            continue
         for j_name in os.listdir(dir_path + sd):
             print("json load " + j_name)
             j_item = json.load(open(dir_path + sd + "/" + j_name, 'r'))
@@ -199,26 +204,26 @@ def _save_anime_to_db():
                 #     print(update_sum_sql)
                 #     cursor.execute(update_sum_sql)
                 #     conn.commit()
-                if k in basic_table_keys:
+                if k in basic_table_keys and j_item[k]:
                     value = j_item[k].replace("'", "''")
                     update_basic_sql = "update anime_basic_info set " + k + " = \'" + \
                                        value + "\' where anime_bang_id = \"" + bang_id + "\""
-                    # print(update_basic_sql)
+                    print(update_basic_sql)
                     # cursor.execute(update_basic_sql)
                     # conn.commit()
-                if k in staff_table_keys:
+                if k in staff_table_keys and j_item[k]:
                     value = j_item[k].replace("'", "''")
                     update_staff_sql = "update anime_staff_info set " + k + " = \'" + \
                                        value + "\' where anime_bang_id = \"" + bang_id + "\""
-                    # print(update_staff_sql)
+                    print(update_staff_sql)
                     # cursor.execute(update_staff_sql)
                     # conn.commit()
 
-                if k in cast_table_keys:
+                if k in cast_table_keys and j_item[k]:
                     value = j_item[k].replace("'", "''")
                     update_cast_sql = "update anime_cast set " + k + " = \'" + \
                                       value + "\' where anime_bang_id = \"" + bang_id + "\""
-                    # print(update_cast_sql)
+                    print(update_cast_sql)
                     # cursor.execute(update_cast_sql)
                     # conn.commit()
             count += 1

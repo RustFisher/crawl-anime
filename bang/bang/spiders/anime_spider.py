@@ -82,7 +82,7 @@ class AnimeSpider(scrapy.Spider):
         anime_dict['info_list'] = info_list
         anime_dict['character_pair_list'] = character_pair_list
 
-        json_dir = "../res_data/anime_json/2017-01/"  # todo 根据实际情况而改变
+        json_dir = "../res_data/anime_json/2017-07/"  # todo 爬取到的数据存放目录 根据实际情况而改变
         if not os.path.exists(json_dir):
             print("json dir not found")
             os.makedirs(json_dir)

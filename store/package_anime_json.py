@@ -23,6 +23,7 @@ class PackageJson(object):
 
         a_list_2017_04 = []  # 4月番列表
         a_list_2017_01 = []
+        a_list_2017_07 = []
 
         conn = db_config.get_db_conn()
 
@@ -88,6 +89,8 @@ class PackageJson(object):
                 a_list_2017_04.append(anime_item)
             elif c_season_id == "2017-01":
                 a_list_2017_01.append(anime_item)
+            elif c_season_id == "2017-07":
+                a_list_2017_07.append(anime_item)
 
             print("Get --> " + str(current) + "/" + str(count_anime))
             print(anime_item)
@@ -99,6 +102,8 @@ class PackageJson(object):
             json.dumps(a_list_2017_04, ensure_ascii=False))
         codecs.open(os.path.join(sys.path[0], "output", "app_data", "2017-01.json"), "w", "utf-8").write(
             json.dumps(a_list_2017_01, ensure_ascii=False))
+        codecs.open(os.path.join(sys.path[0], "output", "app_data", "2017-07.json"), "w", "utf-8").write(
+            json.dumps(a_list_2017_07, ensure_ascii=False))
 
 
 if __name__ == "__main__":
