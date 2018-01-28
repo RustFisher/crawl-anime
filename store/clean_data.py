@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-洗数据
+洗数据并插入数据库中
 
 整理job的key  将其与数据库的列名对应起来
 读取所有的原始数据json  返回所有的 job key
@@ -21,7 +21,7 @@ from store import db_config
     key为中文 value为英文的表
     e.g. {"服装设计": "clothing_design", "配音监督": "dubbing_supervisor",}
 '''
-key_mapping_db_path = 'output/key_mapping_db.json'
+KEY_MAPPING_DB_PATH = 'output/key_mapping_db.json'
 
 
 def summarize_job_keys():
@@ -44,27 +44,27 @@ def job_keys_add_to_mapping_json(new_keys):
     """ 将职位名称添加到json文件中
         先检查现有json文件中是否存在这个key  若不存在则新增进去
     """
-    key_m = json.load(open(key_mapping_db_path, "r"))
+    key_m = json.load(open(KEY_MAPPING_DB_PATH, "r"))
     for k in new_keys:
         if k not in key_m.keys():
             print(k + " not in the record, add now.")
             key_m[k] = ''
-    codecs.open(key_mapping_db_path, "w", "utf-8").write(json.dumps(key_m, ensure_ascii=False))
+    codecs.open(KEY_MAPPING_DB_PATH, "w", "utf-8").write(json.dumps(key_m, ensure_ascii=False))
 
 
 def _backup_mapping_file():
     """ 复制备份文件 """
-    shutil.copy(key_mapping_db_path, 'output/backup/key_mapping_db_'
+    shutil.copy(KEY_MAPPING_DB_PATH, 'output/backup/key_mapping_db_'
                 + time.strftime('%Y-%m-%d_%H%M', time.localtime(time.time())) + '.json')
 
 
-def _convert_anime_to_db_format():
+def _convert_anime_to_db_format(season_id):
     """ 洗成可以入库的json格式
     前提条件 - 数据库已经正确地建立 & 已有职位中英文对照资源文件
     读取配置文件
     一个个读取下载得到的json文件 将职位key替换成数据库中对应的列名
     """
-    key_dict = json.load(open(key_mapping_db_path, "r"))
+    key_dict = json.load(open(KEY_MAPPING_DB_PATH, "r"))
     db_keys = []  # json中所有的key
 
     for k in key_dict.values():
@@ -90,7 +90,7 @@ def _convert_anime_to_db_format():
     dir_path = '../res_data/anime_json/'
     count = 0
     for sd in os.listdir(dir_path):
-        if '2017-07' not in sd:  # 只针对某个季度
+        if season_id not in sd:
             continue
         for j_name in os.listdir(dir_path + sd):
             j_item = json.load(open(dir_path + sd + "/" + j_name, 'r'))  # 读取原始数据
@@ -120,7 +120,10 @@ def _convert_anime_to_db_format():
                 cv_info = cv_info + s_cast + "||"
             item['cast'] = cv_info
             # 至此 动画信息装载完毕 存成json文件
-            codecs.open("output/db_anime_json/" + sd + "/a_" + item["anime_bang_id"] + ".json", "w", "utf-8").write(
+            tmp_dir = os.path.join("output/db_anime_json", sd)
+            if not os.path.exists(tmp_dir):
+                os.mkdir(tmp_dir)
+            codecs.open(os.path.join(tmp_dir, "a_" + item["anime_bang_id"] + ".json"), "w", "utf-8").write(
                 json.dumps(item, ensure_ascii=False))
             count += 1
             print("convert " + str(count) + ", bang_id=" + item["anime_bang_id"])
@@ -209,32 +212,33 @@ def _save_anime_to_db(target_season='2017-07'):
                     update_basic_sql = "update anime_basic_info set " + k + " = \'" + \
                                        value + "\' where anime_bang_id = \"" + bang_id + "\""
                     print(update_basic_sql)
-                    # cursor.execute(update_basic_sql)
-                    # conn.commit()
+                    cursor.execute(update_basic_sql)
+                    conn.commit()
                 if k in staff_table_keys and j_item[k]:
                     value = j_item[k].replace("'", "''")
                     update_staff_sql = "update anime_staff_info set " + k + " = \'" + \
                                        value + "\' where anime_bang_id = \"" + bang_id + "\""
                     print(update_staff_sql)
-                    # cursor.execute(update_staff_sql)
-                    # conn.commit()
+                    cursor.execute(update_staff_sql)
+                    conn.commit()
 
                 if k in cast_table_keys and j_item[k]:
                     value = j_item[k].replace("'", "''")
                     update_cast_sql = "update anime_cast set " + k + " = \'" + \
                                       value + "\' where anime_bang_id = \"" + bang_id + "\""
                     print(update_cast_sql)
-                    # cursor.execute(update_cast_sql)
-                    # conn.commit()
+                    cursor.execute(update_cast_sql)
+                    conn.commit()
             count += 1
             print(count)
     cursor.close()
 
 
 if __name__ == '__main__':
+    target_season_id = "2018-01"
     print(str(datetime.now()) + ' :开始整理职位名称')
     job_keys_add_to_mapping_json(summarize_job_keys())
     print(str(datetime.now()) + ' :整理职位名称完成')
-    _convert_anime_to_db_format()
+    _convert_anime_to_db_format(season_id=target_season_id)
     print(str(datetime.now()) + ' :清洗成数据库格式的json文件')
-    _save_anime_to_db()
+    _save_anime_to_db(target_season_id)

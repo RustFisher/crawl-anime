@@ -18,7 +18,7 @@ ITEM_PIPELINES = {
     'bang.pipelines.AnimeBangCoverPicPipeline': 1,
 
 }
-IMAGES_STORE = '../res_data/anime_pic/2017-07'
+IMAGES_STORE = '../res_data/anime_pic/2018-01'
 DOWNLOAD_DELAY = 0.25
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

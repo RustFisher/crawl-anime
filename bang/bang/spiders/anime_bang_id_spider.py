@@ -10,7 +10,7 @@ import json
 
 class BangIDSpider(scrapy.Spider):
     name = "bid"
-    bang_url_prefix = 'http://bangumi.tv/anime/browser/tv/airtime/2017-7?page='
+    bang_url_prefix = 'http://bangumi.tv/anime/browser/tv/airtime/2018-01?page='
     start_urls = [
         # 'file:///home/rust/ws/crawl-anime/web_source/s2017-01_p1.html',
     ]

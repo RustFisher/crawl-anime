@@ -7,6 +7,9 @@ import json
 获取动画的信息  存储成json文件
 '''
 
+SEASON_ID = "2018-01"
+SEASON_ID_DIR_PATH = "../res_data/anime_bang_id/" + SEASON_ID
+
 
 class AnimeSpider(scrapy.Spider):
     name = "bang"
@@ -19,9 +22,8 @@ class AnimeSpider(scrapy.Spider):
     ]
 
     #  读取JSON中的bang_id
-    id_jsons = os.listdir('../res_data/anime_bang_id')
-    for json_file in os.listdir('../res_data/anime_bang_id'):
-        for single_id in json.load(open('../res_data/anime_bang_id/' + json_file, 'r')):
+    for json_file in os.listdir(SEASON_ID_DIR_PATH):
+        for single_id in json.load(open(os.path.join(SEASON_ID_DIR_PATH, json_file), 'r')):
             start_urls.append('http://bangumi.tv/subject/' + single_id)
 
     def parse(self, response):
@@ -82,12 +84,12 @@ class AnimeSpider(scrapy.Spider):
         anime_dict['info_list'] = info_list
         anime_dict['character_pair_list'] = character_pair_list
 
-        json_dir = "../res_data/anime_json/2017-07/"  # todo 爬取到的数据存放目录 根据实际情况而改变
+        json_dir = os.path.join("../res_data/anime_json", SEASON_ID)  # todo 爬取到的数据存放目录 根据实际情况而改变
         if not os.path.exists(json_dir):
             print("json dir not found")
             os.makedirs(json_dir)
             print("Create dir  " + json_dir)
 
-        json_file = open(json_dir + anime_bang_id + '.json', 'w', encoding='utf8')
+        json_file = open(os.path.join(json_dir, anime_bang_id + '.json'), 'w', encoding='utf8')
         json_file.write(json.dumps(anime_dict, ensure_ascii=False))
         json_file.close()

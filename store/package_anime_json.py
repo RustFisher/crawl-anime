@@ -14,16 +14,14 @@ class PackageJson(object):
     """
 
     @staticmethod
-    def output_data():
+    def output_data(season_id):
         """
         从数据库中读出所有的动画数据  存成json
         这里处理后的json文件  直接给APP使用
         :return: None
         """
 
-        a_list_2017_04 = []  # 4月番列表
-        a_list_2017_01 = []
-        a_list_2017_07 = []
+        res_list = []
 
         conn = db_config.get_db_conn()
 
@@ -43,9 +41,10 @@ class PackageJson(object):
             staff_table_keys.append(row[0])
         staff_table_keys.remove('anime_bang_id')
 
-        cursor.execute('select * from anime_basic_info')
+        cursor.execute('select * from anime_basic_info where season_id = "' + season_id + '"')
         for r in cursor.fetchall():
             anime_id_list.append(r[0])
+        print(anime_id_list)
         count_anime = len(anime_id_list)
         current = 0
         for anime_id in anime_id_list:
@@ -84,13 +83,7 @@ class PackageJson(object):
                     if r[0] is not None:
                         anime_item['cast'] = r[0]
 
-            c_season_id = anime_item['season_id']
-            if c_season_id == "2017-04":
-                a_list_2017_04.append(anime_item)
-            elif c_season_id == "2017-01":
-                a_list_2017_01.append(anime_item)
-            elif c_season_id == "2017-07":
-                a_list_2017_07.append(anime_item)
+            res_list.append(anime_item)
 
             print("Get --> " + str(current) + "/" + str(count_anime))
             print(anime_item)
@@ -98,13 +91,10 @@ class PackageJson(object):
         conn.close()
 
         # 在class里 需要获取到文件的绝对位置sys.path[0] 然后去找存放的地点
-        codecs.open(os.path.join(sys.path[0], "output/", "app_data", "2017-04.json"), "w", "utf-8").write(
-            json.dumps(a_list_2017_04, ensure_ascii=False))
-        codecs.open(os.path.join(sys.path[0], "output", "app_data", "2017-01.json"), "w", "utf-8").write(
-            json.dumps(a_list_2017_01, ensure_ascii=False))
-        codecs.open(os.path.join(sys.path[0], "output", "app_data", "2017-07.json"), "w", "utf-8").write(
-            json.dumps(a_list_2017_07, ensure_ascii=False))
+        codecs.open(os.path.join(sys.path[0], "output/", "app_data", season_id + ".json"), "w", "utf-8").write(
+            json.dumps(res_list, ensure_ascii=False))
 
 
 if __name__ == "__main__":
-    PackageJson.output_data()
+    PackageJson.output_data("2018-01")
+    print("Finish")
